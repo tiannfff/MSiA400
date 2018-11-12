@@ -1,0 +1,187 @@
+---
+title: "LabAssignment2"
+author: "Tian Fu"
+date: "11/4/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+```
+
+```{r}
+redwine <- read.table('~/Desktop/MSiA400/redwine.txt',header=T)
+```
+
+# Problem 1
+```{r}
+redwine[!complete.cases(redwine),] # RS and SD have missing values
+```
+```{r}
+avg_rs <- mean(redwine$RS, na.rm=TRUE)
+avg_rs
+avg_sd <- mean(redwine$SD, na.rm=TRUE)
+avg_sd
+```
+
+From above, after ignoring the missing values, average of RS is 2.537952
+and average of SD is 46.29836
+
+# Problem 2
+```{r}
+#cor(na.omit(redwine))
+#cor(redwine, use = "pairwise.complete.obs")
+# omitting observations with missing values in SD
+SD_vec <- redwine[complete.cases(redwine$SD),]$SD
+FS_vec <- redwine[complete.cases(redwine$SD),]$FS
+fit <- lm(SD_vec~FS_vec)
+coefficients(fit)
+```
+
+From above, in the model SD_vec = $\beta_0$ + $\beta_1$FS_vec, the coefficients
+are:
+
+$\hat\beta_0$ = 13.185505 and $\hat\beta_1$ = 2.086077
+
+# Problem 3
+```{r}
+# FS values of the observations with missing SD values
+FS_input <- redwine[!complete.cases(redwine$SD),]$FS
+# estimated SD based on linear regression results above
+SD_estimate <- predict(fit, data.frame(FS_vec=FS_input))
+SD_estimate
+```
+
+```{r}
+ind <- which(is.na(redwine$SD)) # get indices of observations with missing SD
+redwine[ind,'SD']<-SD_estimate # replace NA with estimated values
+```
+
+```{r}
+mean(redwine$SD)
+```
+
+The average of SD after the imputation is 46.30182
+
+# Problem 4
+```{r}
+# impute missing values of RS using the its mean
+redwine$RS[is.na(redwine$RS)] <- mean(redwine$RS, na.rm=TRUE)
+```
+```{r}
+mean(redwine$RS)
+```
+
+The average of RS after the imputation is 2.537952
+
+# Problem 5
+```{r}
+sum(is.na(redwine)) # all missing values are imputed
+```
+```{r}
+# build multiple linear regression model for the new data set
+winemodel <- lm(QA~FA+VA+CA+RS+CH+FS+SD+DE+PH+SU+AL, data=redwine)
+coefficients(winemodel) # coefficients of the model
+```
+
+The coefficients of this regression model are shown above.
+
+# Problem 6
+```{r}
+summary(winemodel) # summary of the model
+```
+
+From above, as the p-value of PH is 0.414413, which is nonsignificant and the
+largest among other p-values, pH(PH) is least likely to be related to
+quality(QA).
+
+# Problem 7
+```{r}
+# Function for creating list of K index sets for K-fold CV
+# n is sample size; K is number of parts;
+# returns K-length list of indices for each part
+CVInd <- function(n,K) {
+   m<-floor(n/K)  #approximate size of each part
+   r<-n-m*K  
+   I<-sample(n,n)  #random reordering of the indices
+   Ind<-list()  #will be list of indices for all K parts
+   length(Ind)<-K
+   for (k in 1:K) {
+      if (k <= r){
+        # in the example of 5-fold CV for 1599 observations
+        # first 4 sets will have 320 observations and 5th will have 319
+        kpart <- ((m+1)*(k-1)+1):((m+1)*k) 
+      }
+      else{
+        kpart<-((m+1)*r+m*(k-r-1)+1):((m+1)*r+m*(k-r))
+      }
+      Ind[[k]] <- I[kpart]  #indices for kth part of data
+   }
+   Ind # return a list of indices
+}
+```
+
+```{r}
+Nrep<-20 #number of replicates of CV
+K<-5  #5-fold CV on each replicate
+n=nrow(redwine) # total number of observations
+y<-redwine$QA # QA is the response variable
+SSE<-matrix(0,Nrep,1) # to store SSE for each test
+for (j in 1:Nrep) {
+  Ind<-CVInd(n,K) # randomly grouped list of indices
+  yhat11<-y; # 11 predictor variables in the model
+  for (k in 1:K) {
+     # fit a model after excluding a set of indices as a test set
+     model_cv <- lm(QA~FA+VA+CA+RS+CH+FS+SD+DE+PH+SU+AL,redwine[-Ind[[k]],])
+     # use the fitted model to predict y values of the test set
+     yhat11[Ind[[k]]]<-as.numeric(predict(model_cv,redwine[Ind[[k]],]))
+  } #end of k loop
+#sum((y-yhat11)/y)/n
+  SSE[j,1]=sum((y-yhat11)^2)
+} #end of j loop
+#SSE
+apply(SSE,2,mean)
+```
+
+# Problem 8
+```{r}
+mean_ph <- mean(redwine$PH)
+mean_ph
+sd_ph <- sd(redwine$PH)
+sd_ph
+```
+
+PH is the selected attribute, its average $\mu$ = 3.306202
+and its standard deviation $\sigma$ = 0.3924948
+
+```{r}
+# create a new dataset after removing observations that is outside of 
+# three standard deviations of the mean of PH
+redwine2 <- redwine[(abs(redwine$PH-mean_ph) <= 3*sd_ph),]
+```
+
+```{r}
+dim(redwine)
+dim(redwine2)
+```
+
+The dimension of redwine2 is shown above.
+As 1599-1580=19, there are 19 observations removed.
+
+# Problem 9
+```{r}
+# build a new model of the new data set
+winemodel2 <- lm(QA~FA+VA+CA+RS+CH+FS+SD+DE+PH+SU+AL, data=redwine2)
+summary(winemodel2)
+```
+
+Comparing with winemodel obtained from Problem 6, this model has a higher
+$R^2$, a higher adjusted $R^2$ and a higher overall F-statistic.
+Out of 11 predictor variables, both models have 7 predictors that
+are significant. So I think winemodel2 is better.
+
+As shown above, five attributes with smallest p-values are
+VA, CH, SD, SU, AL. All of them are highly significant.
