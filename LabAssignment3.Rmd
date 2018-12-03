@@ -1,0 +1,93 @@
+---
+title: "LabAssignment3"
+author: "Tian Fu"
+date: "11/28/2018"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem1
+a) The purpose of doing Markov Chain Monte Carlo is to obtain sample points from complex distributions. By constructing a Markov chain whose equilibrium probability distribution is the target distribution, we use MCMC to generate random samples from the target distribution.
+
+b) Metropolis algorithm is a special case of Metropolis-Hastings algorithm. In Metropolis algorithm, the proposal distribution has to be symmetric, i.e., $q(\theta_1|\theta_2)$ = $q(\theta_2|\theta_1)$. However, in Metropolis-Hastings algorithm, q(⋅|⋅) does not have to be symmetric.
+
+c) The purpose of Ridge and Lasso regression is to avoid multicollinearity, too many predictors, overfitting and illconditioned $X^TX$ matrix. Both regressions have shrinkage penalty and shrink coefficients toward zero, while Lasso regression also performs variable selection.
+
+d) IIA assumption for Multinomial Logit discrete choice model is independence of irrelevant alternatives: the ratio of probabilities of choosing two alternatives is independent of the presence or attributes of any other alternative. The model can be estimated and applied in cases where different members of the population face different sets of alternatives.
+
+# Problem2
+```{r}
+library(quantreg)
+```
+
+```{r}
+gas <- read.csv("gas_mileage.csv",header=T)
+```
+
+# a)
+```{r}
+fit <- rq(Mpg~.,tau=seq(0.05, 0.95, by=0.05), data=gas)
+summary(fit)
+```
+The regression models for the 0.05, 0.10,..., 0.90, 0.95th conditional quantile for Mpg regressed on all predictors is shown above.
+
+# b)
+```{r}
+plot.rqs(fit,mfrow=c(2,2))
+```
+The plotted results are shown above.
+
+# c)
+Displacement: in lower quantiles (around 0.35th), a unit increase in displacement
+will lead to an increase in Mpg; while in upper quantiles, a unit increase in
+displacement will lead to a decrease in Mpg, and the decreased amount tends to be
+larger in higher quantiles.
+
+Carb_barrels: in lower quantiles (below 0.68th), a unit increase in carb_barrels
+will lead to an increase in Mpg, and the increased amount tends to be larger in
+lower quantiles; while in upper quantiles, a unit increase in carb_barrels will
+lead to no change or a slightly decrease or increase in Mpg.
+
+Width: in lower and upper quantiles (below 0.5th and above 0.8th), a unit increase
+in width will lead to a greater decrease in Mpg; while in between 0.5th and 0.8th
+quantiles, a unit increase in width will lead to a smaller decrease in Mpg.
+
+# d)
+```{r}
+fit2 <- rq(Mpg~.,tau=0.5, data=gas)
+summary.rq(fit2,se="boot")
+```
+
+# Problem3
+```{r}
+library(e1071)
+```
+```{r}
+car <- read.csv("car.csv",header=T)
+```
+
+# a)
+```{r}
+svm <- svm(factor(y)~., data=car)
+summary(svm)
+```
+The fitted support vector machine is shown above.
+
+# b)
+```{r}
+plot(svm, car, income~car_age)
+```
+The plot is shown above
+
+# c)
+```{r}
+newdata <- with(car, data.frame(income=50,car_age=5))
+
+predict(svm, newdata = newdata, type = "response")
+```
+From above, the response for a family with income = 50 and car age = 5 is 1. So the person will buy the car.
