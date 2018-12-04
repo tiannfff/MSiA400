@@ -43,6 +43,22 @@ plot.rqs(fit,mfrow=c(2,2))
 The plotted results are shown above.
 
 # c)
+When $\tau$ = 0.9:
+
+The coefficient of displacement is -0.17534, meaning that when displacement is
+increased by one unit then 0.9th quantile of Mpg will decrease by 0.17534 on
+average keeping others fixed.
+
+The coefficient of carb_barrels is 0.01741, meaning that when carb_barrels is
+increased by one unit then 0.9th quantile of Mpg will increase by 0.01741 on
+average keeping others fixed.
+
+The coefficient of width is -0.48581, meaning that when width is
+increased by one unit then 0.9th quantile of Mpg will decrease by 0.48581 on
+average keeping others fixed.
+
+From the plots:
+
 Displacement: in lower quantiles, a unit increase in displacement
 will lead to a much smaller decrease in Mpg compared to upper quantiles, and the
 decreased amount tends to be larger in higher quantiles (0.8th quantile).
