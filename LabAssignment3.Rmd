@@ -43,10 +43,9 @@ plot.rqs(fit,mfrow=c(2,2))
 The plotted results are shown above.
 
 # c)
-Displacement: in lower quantiles (around 0.35th), a unit increase in displacement
-will lead to an increase in Mpg; while in upper quantiles, a unit increase in
-displacement will lead to a decrease in Mpg, and the decreased amount tends to be
-larger in higher quantiles.
+Displacement: in lower quantiles, a unit increase in displacement
+will lead to a much smaller decrease in Mpg compared to upper quantiles, and the
+decreased amount tends to be larger in higher quantiles (0.8th quantile).
 
 Carb_barrels: in lower quantiles (below 0.68th), a unit increase in carb_barrels
 will lead to an increase in Mpg, and the increased amount tends to be larger in
@@ -54,8 +53,9 @@ lower quantiles; while in upper quantiles, a unit increase in carb_barrels will
 lead to no change or a slightly decrease or increase in Mpg.
 
 Width: in lower and upper quantiles (below 0.5th and above 0.8th), a unit increase
-in width will lead to a greater decrease in Mpg; while in between 0.5th and 0.8th
-quantiles, a unit increase in width will lead to a smaller decrease in Mpg.
+in width will lead to a greater decrease in Mpg (around a decrease of 0.6);
+while in between 0.5th and 0.8th quantiles, a unit increase in width will lead to
+a smaller decrease in Mpg (or even a slightly increase in Mpg in 0.63th quantile).
 
 # d)
 ```{r}
